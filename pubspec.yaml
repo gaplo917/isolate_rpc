@@ -1,0 +1,20 @@
+name: isolate_rpc
+description: Wrapping Isolate message-drive into RPC style service. Significantly reduced overhead compared to `Isolate.run`.
+version: 1.0.0
+repository: https://github.com/gaplo917/isolate_rpc
+license: MIT
+homepage: https://github.com/gaplo917/isolate_rpc
+
+environment:
+  sdk: '>=2.19.0 <3.0.0'
+
+# dependencies:
+#   path: ^1.8.0
+
+dev_dependencies:
+  benchmark_harness: ^2.2.1
+  collection: ^1.17.1
+  lints: ^2.0.0
+  test: ^1.21.0
+dependencies:
+  logging: ^1.1.1
