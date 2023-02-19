@@ -1,15 +1,12 @@
 name: isolate_rpc
-description: Wrapping Isolate message-drive into RPC style service. Significantly reduced overhead compared to `Isolate.run`.
+description: Dart Isolate RPC. Wrapping Isolate message-drive style into RPC style service reduced significant overhead compared to `Isolate.run`.
 version: 1.0.0
 repository: https://github.com/gaplo917/isolate_rpc
 license: MIT
 homepage: https://github.com/gaplo917/isolate_rpc
 
 environment:
-  sdk: '>=2.19.0 <3.0.0'
-
-# dependencies:
-#   path: ^1.8.0
+  sdk: '>=2.14.0 <3.0.0'
 
 dev_dependencies:
   benchmark_harness: ^2.2.1
