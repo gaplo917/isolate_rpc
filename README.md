@@ -1,39 +1,51 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
-
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Dart Isolate RPC. Wrapping Isolate message-drive style into RPC style service 
+reduced significant overhead compared to `Isolate.run`.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+This library reduce the significant overheads of `Isolate.run`.
+
+`Isolate.run` create new Isolate on every single call. In the M1Pro macbook benchmark, 
+each Isolate startup overhead is about ~85us*.
+
+Imagine if you are firing asynchronous offscreen operations constantly based on UI interactions, such as sending
+analytics, fetching remote API, etc., you might want to eliminate this overhead.
+
+This library provide a simple solution to this problem and yet can as an `Isolate.run` alternative for 
+Dart SDK < 2.19.0. 
+
+*See benchmark result: https://github.com/gaplo917/isolate_rpc/blob/main/benchmark/main.dart
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
-
+1. Create a single RPC service with `RpcService<RequestType, ResponseType>` using `IsolateRpc.single`.
 ```dart
-const like = 'sample';
+// define a single Rpc service with exactly one Isolate, isolate will be spawned immediately.
+RpcService<int, int> rpcService = IsolateRpc.single(processor: (data) => data + 1, debugName: "rpc");
 ```
 
-## Additional information
+2. Execute with `1` as an input, and receive `RpcResponse<T>` response.
+```dart
+// execute normal RpcRequest in isolate
+RpcResponse<int> resp = await rpcService.execute(1);
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+print(resp.result); // output: 2
+```
+
+3. Shut down the rpcService when you no longer need it.
+```dart
+rpcService.shutdown(); // close the receive port and underlying Isolate.
+```
+
+## Advance Usage
+
+create a pool of RPC services to improve performance when there are computational tasks, i.e., JSON serialization.
+```dart
+RpcService<int, int> rpcServicePool = IsolateRpc.pool(size: 4, processor: (data) => data + 1, debugNamePrefix: "rpc-pool");
+```
+
+## Benchmark (compared with `Isolate.run`)
+See benchmark result: https://github.com/gaplo917/isolate_rpc/blob/main/benchmark/main.dart
+
+## License
+MIT
