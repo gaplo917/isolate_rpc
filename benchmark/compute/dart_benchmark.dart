@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:isolate';
-import 'dart:typed_data';
 
 import 'package:benchmark_harness/benchmark_harness.dart';
 
@@ -14,7 +13,7 @@ class IsolateRunComputeBenchmark extends AsyncBenchmarkBase with BenchmarkTask, 
   final int concurrency;
 
   IsolateRunComputeBenchmark({required this.numOfTasks, required this.concurrency})
-      : super('IsolateRunComputeBenchmark(n=$numOfTasks,rps=$concurrency)');
+      : super('IsolateRun,Compute(n=$numOfTasks,c=$concurrency)');
 
   @override
   Future<void> setup() {

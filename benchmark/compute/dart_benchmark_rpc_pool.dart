@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:isolate_rpc/isolate_rpc.dart';
@@ -18,7 +17,7 @@ class IsolateRpcPoolComputeBenchmark extends AsyncBenchmarkBase
   static final poolSize = Platform.numberOfProcessors;
 
   IsolateRpcPoolComputeBenchmark({required this.numOfTasks, required this.concurrency})
-      : super('IsolateRpcPoolComputeBenchmark(n=$numOfTasks,rps=$concurrency,poolSize=$poolSize)');
+      : super('IsolateRpcPool,Compute(n=$numOfTasks,c=$concurrency,poolSize=$poolSize)');
 
   late RpcService rpcExecutor;
 

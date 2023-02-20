@@ -87,69 +87,75 @@ var rpcServicePool = IsolateRpc.pool(
 ## Benchmark (compared with `Isolate.run`)
 See benchmark implementation: https://github.com/gaplo917/isolate_rpc/blob/main/benchmark
 
-`NoCompute`: Do noting
-
-`Compute`: A large json serialization and deserialization
+`NoCompute`: no workload, just complete the isolate task immediately
+`Compute`: large json (300 items in json array) serialization and deserialization
 
 ```dart
 /// # execution script
 /// dart compile exe benchmark/main.dart -o ./benchmark/main
 /// ./benchmark/main
 ///
-/// IsolateRunNoComputeBenchmark(n=1,rps=1)(RunTime): 92.14198839030682 us.
-/// IsolateRpcNoComputeBenchmark(n=1,rps=1)(RunTime): 4.515276300906892 us.
-/// IsolateRpcPoolNoComputeBenchmark(n=1,rps=1,poolSize=4)(RunTime): 4.529088068117485 us.
-/// IsolateRunComputeBenchmark(n=1,rps=1)(RunTime): 342.55780099332077 us.
-/// IsolateRpcComputeBenchmark(n=1,rps=1)(RunTime): 224.05421754228743 us.
-/// IsolateRpcPoolComputeBenchmark(n=1,rps=1,poolSize=10)(RunTime): 205.71737118173402 us.
+/// running benchmark numOfTasks=1, concurrency=1
+/// IsolateRun,NoCompute(n=1,c=1)(RunTime): 87.20392413342054 us.
+/// IsolateRpc,NoCompute(n=1,c=1)(RunTime): 4.599250324820917 us.
+/// IsolateRpcPool,NoCompute(n=1,c=1,poolSize=10)(RunTime): 4.520818358130009 us.
+/// IsolateRun,Compute(n=1,c=1)(RunTime): 361.96815056098444 us.
+/// IsolateRpc,Compute(n=1,c=1)(RunTime): 226.50939977349944 us.
+/// IsolateRpcPool,Compute(n=1,c=1,poolSize=10)(RunTime): 210.5962935663894 us.
+///
 ///
 /// running benchmark numOfTasks=2, concurrency=2
-/// IsolateRunNoComputeBenchmark(n=2,rps=2)(RunTime): 141.49331446763352 us.
-/// IsolateRpcNoComputeBenchmark(n=2,rps=2)(RunTime): 10.123024750721264 us.
-/// IsolateRpcPoolNoComputeBenchmark(n=2,rps=2,poolSize=4)(RunTime): 10.259624805708452 us.
-/// IsolateRunComputeBenchmark(n=2,rps=2)(RunTime): 477.8397037744864 us.
-/// IsolateRpcComputeBenchmark(n=2,rps=2)(RunTime): 418.97381650607457 us.
-/// IsolateRpcPoolComputeBenchmark(n=2,rps=2,poolSize=10)(RunTime): 249.86570893191754 us.
+/// IsolateRun,NoCompute(n=2,c=2)(RunTime): 151.93398663020358 us.
+/// IsolateRpc,NoCompute(n=2,c=2)(RunTime): 9.917934502320785 us.
+/// IsolateRpcPool,NoCompute(n=2,c=2,poolSize=10)(RunTime): 10.31331700399639 us.
+/// IsolateRun,Compute(n=2,c=2)(RunTime): 478.0542413381123 us.
+/// IsolateRpc,Compute(n=2,c=2)(RunTime): 422.2839349799451 us.
+/// IsolateRpcPool,Compute(n=2,c=2,poolSize=10)(RunTime): 228.39888089528378 us.
+///
 ///
 /// running benchmark numOfTasks=4, concurrency=4
-/// IsolateRunNoComputeBenchmark(n=4,rps=4)(RunTime): 275.266308835673 us.
-/// IsolateRpcNoComputeBenchmark(n=4,rps=4)(RunTime): 17.764444641826177 us.
-/// IsolateRpcPoolNoComputeBenchmark(n=4,rps=4,poolSize=4)(RunTime): 18.124049623474185 us.
-/// IsolateRunComputeBenchmark(n=4,rps=4)(RunTime): 768.9285439877065 us.
-/// IsolateRpcComputeBenchmark(n=4,rps=4)(RunTime): 865.5746430116833 us.
-/// IsolateRpcPoolComputeBenchmark(n=4,rps=4,poolSize=10)(RunTime): 363.45956750863166 us.
+/// IsolateRun,NoCompute(n=4,c=4)(RunTime): 272.6056971514243 us.
+/// IsolateRpc,NoCompute(n=4,c=4)(RunTime): 15.622141161032307 us.
+/// IsolateRpcPool,NoCompute(n=4,c=4,poolSize=10)(RunTime): 16.181924835147054 us.
+/// IsolateRun,Compute(n=4,c=4)(RunTime): 793.5767552558508 us.
+/// IsolateRpc,Compute(n=4,c=4)(RunTime): 818.5012274959083 us.
+/// IsolateRpcPool,Compute(n=4,c=4,poolSize=10)(RunTime): 283.7988081725312 us.
+///
 ///
 /// running benchmark numOfTasks=8, concurrency=8
-/// IsolateRunNoComputeBenchmark(n=8,rps=8)(RunTime): 520.139365574623 us.
-/// IsolateRpcNoComputeBenchmark(n=8,rps=8)(RunTime): 22.880426948553385 us.
-/// IsolateRpcPoolNoComputeBenchmark(n=8,rps=8,poolSize=4)(RunTime): 22.989264121014276 us.
-/// IsolateRunComputeBenchmark(n=8,rps=8)(RunTime): 1340.9276139410188 us.
-/// IsolateRpcComputeBenchmark(n=8,rps=8)(RunTime): 1637.0875613747953 us.
-/// IsolateRpcPoolComputeBenchmark(n=8,rps=8,poolSize=10)(RunTime): 465.5580637654177 us.
+/// IsolateRun,NoCompute(n=8,c=8)(RunTime): 510.0441101478837 us.
+/// IsolateRpc,NoCompute(n=8,c=8)(RunTime): 23.258210066052655 us.
+/// IsolateRpcPool,NoCompute(n=8,c=8,poolSize=10)(RunTime): 24.08178107427966 us.
+/// IsolateRun,Compute(n=8,c=8)(RunTime): 1387.009015256588 us.
+/// IsolateRpc,Compute(n=8,c=8)(RunTime): 1640.1450819672132 us.
+/// IsolateRpcPool,Compute(n=8,c=8,poolSize=10)(RunTime): 477.5835721107927 us.
+///
 ///
 /// running benchmark numOfTasks=16, concurrency=16
-/// IsolateRunNoComputeBenchmark(n=16,rps=16)(RunTime): 1509.5758490566038 us.
-/// IsolateRpcNoComputeBenchmark(n=16,rps=16)(RunTime): 36.826072546492355 us.
-/// IsolateRpcPoolNoComputeBenchmark(n=16,rps=16,poolSize=4)(RunTime): 38.38889422061844 us.
-/// IsolateRunComputeBenchmark(n=16,rps=16)(RunTime): 2866.0085959885387 us.
-/// IsolateRpcComputeBenchmark(n=16,rps=16)(RunTime): 3275.176759410802 us.
-/// IsolateRpcPoolComputeBenchmark(n=16,rps=16,poolSize=10)(RunTime): 1054.1527924130664 us.
+/// IsolateRun,NoCompute(n=16,c=16)(RunTime): 1183.6209343583678 us.
+/// IsolateRpc,NoCompute(n=16,c=16)(RunTime): 37.12607896641978 us.
+/// IsolateRpcPool,NoCompute(n=16,c=16,poolSize=10)(RunTime): 38.0285589336984 us.
+/// IsolateRun,Compute(n=16,c=16)(RunTime): 2856.30242510699 us.
+/// IsolateRpc,Compute(n=16,c=16)(RunTime): 3342.764607679466 us.
+/// IsolateRpcPool,Compute(n=16,c=16,poolSize=10)(RunTime): 1092.5019115237576 us.
+///
 ///
 /// running benchmark numOfTasks=32, concurrency=32
-/// IsolateRunNoComputeBenchmark(n=32,rps=32)(RunTime): 2748.6703296703295 us.
-/// IsolateRpcNoComputeBenchmark(n=32,rps=32)(RunTime): 68.0847290305011 us.
-/// IsolateRpcPoolNoComputeBenchmark(n=32,rps=32,poolSize=4)(RunTime): 71.61564077774197 us.
-/// IsolateRunComputeBenchmark(n=32,rps=32)(RunTime): 5900.719764011799 us.
-/// IsolateRpcComputeBenchmark(n=32,rps=32)(RunTime): 6624.284768211921 us.
-/// IsolateRpcPoolComputeBenchmark(n=32,rps=32,poolSize=10)(RunTime): 2132.272630457934 us.
+/// IsolateRun,NoCompute(n=32,c=32)(RunTime): 2181.123093681917 us.
+/// IsolateRpc,NoCompute(n=32,c=32)(RunTime): 68.79331338355175 us.
+/// IsolateRpcPool,NoCompute(n=32,c=32,poolSize=10)(RunTime): 71.01860663305163 us.
+/// IsolateRun,Compute(n=32,c=32)(RunTime): 6355.952531645569 us.
+/// IsolateRpc,Compute(n=32,c=32)(RunTime): 6755.542087542088 us.
+/// IsolateRpcPool,Compute(n=32,c=32,poolSize=10)(RunTime): 2062.99793814433 us.
+///
 ///
 /// running benchmark numOfTasks=64, concurrency=64
-/// IsolateRunNoComputeBenchmark(n=64,rps=64)(RunTime): 4369.454148471616 us.
-/// IsolateRpcNoComputeBenchmark(n=64,rps=64)(RunTime): 133.24562104562105 us.
-/// IsolateRpcPoolNoComputeBenchmark(n=64,rps=64,poolSize=4)(RunTime): 133.31922410345288 us.
-/// IsolateRunComputeBenchmark(n=64,rps=64)(RunTime): 12436.567901234568 us.
-/// IsolateRpcComputeBenchmark(n=64,rps=64)(RunTime): 13304.079470198676 us.
-/// IsolateRpcPoolComputeBenchmark(n=64,rps=64,poolSize=10)(RunTime): 4302.621505376344 us.
+/// IsolateRun,NoCompute(n=64,c=64)(RunTime): 4425.419426048565 us.
+/// IsolateRpc,NoCompute(n=64,c=64)(RunTime): 148.14302644248573 us.
+/// IsolateRpcPool,NoCompute(n=64,c=64,poolSize=10)(RunTime): 133.5073760096122 us.
+/// IsolateRun,Compute(n=64,c=64)(RunTime): 10957.77049180328 us.
+/// IsolateRpc,Compute(n=64,c=64)(RunTime): 13419.46 us.
+/// IsolateRpcPool,Compute(n=64,c=64,poolSize=10)(RunTime): 4335.233766233766 us.
 ```
 
 ## License

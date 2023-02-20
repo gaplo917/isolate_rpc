@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:isolate_rpc/isolate_rpc.dart';
@@ -13,7 +12,8 @@ class IsolateRpcNoComputeBenchmark extends AsyncBenchmarkBase with BenchmarkTask
   @override
   final int concurrency;
 
-  IsolateRpcNoComputeBenchmark({required this.numOfTasks, required this.concurrency}) : super('IsolateRpcNoComputeBenchmark(n=$numOfTasks,rps=$concurrency)');
+  IsolateRpcNoComputeBenchmark({required this.numOfTasks, required this.concurrency})
+      : super('IsolateRpc,NoCompute(n=$numOfTasks,c=$concurrency)');
 
   late RpcService<void, bool> rpcService;
 

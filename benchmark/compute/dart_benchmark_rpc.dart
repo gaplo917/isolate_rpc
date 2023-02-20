@@ -14,7 +14,7 @@ class IsolateRpcComputeBenchmark extends AsyncBenchmarkBase with BenchmarkTask, 
   final int concurrency;
 
   IsolateRpcComputeBenchmark({required this.numOfTasks, required this.concurrency})
-      : super('IsolateRpcComputeBenchmark(n=$numOfTasks,rps=$concurrency)');
+      : super('IsolateRpc,Compute(n=$numOfTasks,c=$concurrency)');
 
   late RpcService<void, bool> rpcService;
 

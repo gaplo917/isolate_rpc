@@ -13,7 +13,7 @@ class IsolateRunNoComputeBenchmark extends AsyncBenchmarkBase with BenchmarkTask
   final int concurrency;
 
   IsolateRunNoComputeBenchmark({required this.numOfTasks, required this.concurrency})
-      : super('IsolateRunNoComputeBenchmark(n=$numOfTasks,rps=$concurrency)');
+      : super('IsolateRun,NoCompute(n=$numOfTasks,c=$concurrency)');
 
   @override
   Future<void> exercise() => run();
