@@ -15,33 +15,35 @@ analytics, fetching remote API, etc., you might want to eliminate this overhead.
 
 ## Getting started
 
-1. Create a single RPC service with `RpcService<RequestType, ResponseType>` using `IsolateRpc.single`.
+1. Create a single RPC service with `IsolateRpc<RequestType, ResponseType>` using `IsolateRpc.single`.
 ```dart
+import 'package:isolate_rpc/isolate_rpc.dart';
+
 // define a single Rpc service with exactly one Isolate, isolate will be spawned immediately.
-RpcService<int, int> rpcService = IsolateRpc.single(
+IsolateRpc<int, int> rpc = IsolateRpc.single(
     processor: (data) => data + 1, // the execution logics, i.e. this is a plus one operation
     debugName: "rpc" // this will be used as the Isolate name
 );
 ```
 
-2. Execute with `1` as an input, and receive `RpcResponse<T>` response.
+2. Execute with `1` as an input, and receive `IsolateRpcResponse<T>` response.
 ```dart
 // execute normal RpcRequest in isolate
-RpcResponse<int> resp = await rpcService.execute(1);
+IsolateRpcResponse<int> resp = await rpc.execute(1);
 
 print(resp.result); // output: 2
 ```
 
-3. Shut down the rpcService when you no longer need it.
+3. Shut down the rpc when you no longer need it.
 ```dart
-rpcService.shutdown(); // close the receive port and underlying Isolate.
+rpc.shutdown(); // close the receive port and underlying Isolate.
 ```
 
 ## Advance Usage
 
 Creating a pool of RPC services to improve performance when there are computational tasks, i.e., JSON serialization.
 ```dart
-RpcService<int, int> rpcServicePool = IsolateRpc.pool(
+IsolateRpc<int, int> rpcPool = IsolateRpc.pool(
     size: 4, 
     processor: (data) => data + 1, 
     debugNamePrefix: "rpc-pool" // internally use "rpc-pool-0","rpc-pool-1","rpc-pool-2","rpc-pool-3"
@@ -50,13 +52,7 @@ RpcService<int, int> rpcServicePool = IsolateRpc.pool(
 
 Creating an RPC service with `package:logging` logger
 ```dart
-
-// To receive all the logs from the Rpc service.
-var rpcService = IsolateRpc.single(
-    processor: (data) => data + 1,
-    debugName: "rpc",
-    logger: Logger("rpc_logger")
-);
+import 'package:logging/logging.dart';
 
 void main() {
   Logger.root.level = Level.FINEST;
@@ -66,17 +62,24 @@ void main() {
     print('${Isolate.current.debugName}: ${record.level.name}: ${record.time}: ${record.message}');
   });
 
+  // To receive all the logs from the Rpc service.
+  var rpc = IsolateRpc.single(
+      processor: (data) => data + 1,
+      debugName: "rpc",
+      logger: Logger("rpc_logger")
+  );
+
 }
 ```
 
 Cast to the underlying instance class to get more information
 ```dart
-var rpcService = IsolateRpc.single(
+var rpc = IsolateRpc.single(
     processor: (data) => data + 1, 
     debugName: "rpc"
 ) as IsolateRpcService<int, int>;
 
-var rpcServicePool = IsolateRpc.pool(
+var rpcPool = IsolateRpc.pool(
     size: 4, 
     processor: (data) => data + 1, 
     debugNamePrefix: "rpc-pool"

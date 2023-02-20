@@ -19,7 +19,7 @@ class IsolateRpcPoolComputeBenchmark extends AsyncBenchmarkBase
   IsolateRpcPoolComputeBenchmark({required this.numOfTasks, required this.concurrency})
       : super('IsolateRpcPool,Compute(n=$numOfTasks,c=$concurrency,poolSize=$poolSize)');
 
-  late RpcService rpcExecutor;
+  late IsolateRpc rpcExecutor;
 
   @override
   Future<void> setup() {

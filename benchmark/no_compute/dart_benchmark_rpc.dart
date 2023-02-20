@@ -15,11 +15,11 @@ class IsolateRpcNoComputeBenchmark extends AsyncBenchmarkBase with BenchmarkTask
   IsolateRpcNoComputeBenchmark({required this.numOfTasks, required this.concurrency})
       : super('IsolateRpc,NoCompute(n=$numOfTasks,c=$concurrency)');
 
-  late RpcService<void, bool> rpcService;
+  late IsolateRpc<void, bool> rpc;
 
   @override
   Future<void> setup() {
-    rpcService = IsolateRpc.single(processor: (request) async {
+    rpc = IsolateRpc.single(processor: (request) async {
       return noCompute();
     });
     return Future.value();
@@ -27,7 +27,7 @@ class IsolateRpcNoComputeBenchmark extends AsyncBenchmarkBase with BenchmarkTask
 
   @override
   Future<void> teardown() async {
-    return rpcService.shutdown();
+    return rpc.shutdown();
   }
 
   @override
@@ -35,6 +35,6 @@ class IsolateRpcNoComputeBenchmark extends AsyncBenchmarkBase with BenchmarkTask
 
   @override
   Future<void> run() async {
-    return runTasks((i) => rpcService.execute(null));
+    return runTasks((i) => rpc.execute(null));
   }
 }

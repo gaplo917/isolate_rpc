@@ -51,7 +51,7 @@ void main() {
     var id = 999;
     var debugName = "testing";
     IsolateRpcService<int, int> rpc = IsolateRpc.single<int, int>(processor: (a) => a + 1, id: id, debugName: debugName) as IsolateRpcService<int, int>;
-    RpcResponse<int> resp = await rpc.execute(1);
+    IsolateRpcResponse<int> resp = await rpc.execute(1);
     expect(rpc.id, equals(id));
     expect(rpc.debugName, equals(debugName));
     expect(resp.serviceId, equals(id));
@@ -62,18 +62,18 @@ void main() {
 
   test('when Rpc execution is fail, should return error in RpcResponse', () async {
     var error = UnimplementedError("test");
-    RpcService<int, int> rpc = IsolateRpc.single(processor: (a) => throw error);
-    RpcResponse<int> resp = await rpc.execute(1);
-    expect(resp.error is RemoteError, isTrue);
+    IsolateRpc<int, int> rpc = IsolateRpc.single(processor: (a) => throw error);
+    IsolateRpcResponse<int> resp = await rpc.execute(1);
+    expect(resp.error is UnimplementedError, isTrue);
     var remoteError = resp.error;
-    if (remoteError is RemoteError) {
+    if (remoteError is UnimplementedError) {
       expect(remoteError.toString(), equals(error.toString()));
     }
     expect(resp.result, equals(null));
   });
 
   test('request id should be increased', () async {
-    RpcService<int, int> rpc = IsolateRpc.single(processor: (a) => a + 1);
+    IsolateRpc<int, int> rpc = IsolateRpc.single(processor: (a) => a + 1);
     var resp1 = await rpc.execute(1);
     var resp2 = await rpc.execute(1);
 
@@ -82,18 +82,18 @@ void main() {
   });
 
   test('shutdown rpc service should throw RpcError', () async {
-    RpcService<int, int> rpc = IsolateRpc.single(processor: (a) => a + 1);
+    IsolateRpc<int, int> rpc = IsolateRpc.single(processor: (a) => a + 1);
     rpc.shutdown();
 
     var resp = await rpc.execute(1);
-    expect(resp.error is RpcError, isTrue);
+    expect(resp.error is IsolateRpcError, isTrue);
     expect(resp.error.toString(), contains("has been shut down"));
   });
 
   test('complex type should work', () async {
     var req = ComplexModel(int0: 2, string0: "2", double0: 2.0, bool0: false, map: {"0": ComplexModel.dummy()}, list:[ComplexModel.dummy()]);
-    RpcService<ComplexModel, ComplexModel> rpc = IsolateRpc.single(processor: (a) => a);
-    RpcResponse<ComplexModel> resp = await rpc.execute(req);
+    IsolateRpc<ComplexModel, ComplexModel> rpc = IsolateRpc.single(processor: (a) => a);
+    IsolateRpcResponse<ComplexModel> resp = await rpc.execute(req);
     var result = resp.result!;
 
     expect(result.int0, equals(2));

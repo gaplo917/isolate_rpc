@@ -2,14 +2,14 @@ import 'dart:async';
 import 'dart:isolate';
 import 'package:logging/logging.dart';
 
-class RpcResponse<T> {
+class IsolateRpcResponse<T> {
   /// Original Rpc request id
   final int requestId;
 
   /// Rpc service id, that could be defined in [IsolateRpc.single].
   final int serviceId;
 
-  /// Contain the underlying error. Either [RemoteError] or [RpcError].
+  /// Contain the underlying error. Either [RemoteError] or [IsolateRpcError].
   ///
   /// if the isolate process successfully, this field will be null.
   final Error? error;
@@ -19,26 +19,26 @@ class RpcResponse<T> {
   /// if the isolate process unsuccessfully, this field will be null
   final T? result;
 
-  RpcResponse({required this.requestId, required this.serviceId, required this.error, required this.result});
+  IsolateRpcResponse({required this.requestId, required this.serviceId, required this.error, required this.result});
 
   @override
   String toString() {
-    return 'RpcResponse{requestId: $requestId, serviceId: $serviceId, error: $error, result: $result}';
+    return 'IsolateRpcResponse{requestId: $requestId, serviceId: $serviceId, error: $error, result: $result}';
   }
 }
 
-/// Be thrown when bad things happens inside the [RpcService]
+/// Be thrown when bad things happens inside the [IsolateRpc]
 ///
-/// for example, when [RpcService] has been shut down but still running [RpcService.execute].
-class RpcError extends Error {
+/// for example, when [IsolateRpc] has been shut down but still running [IsolateRpc.execute].
+class IsolateRpcError extends Error {
   final String? message;
 
-  RpcError([this.message]);
+  IsolateRpcError([this.message]);
 
   @override
   String toString() {
     var message = this.message;
-    return (message != null) ? "RpcError: $message" : "RpcError";
+    return (message != null) ? "IsolateRpcError: $message" : "IsolateRpcError";
   }
 }
 
@@ -55,14 +55,8 @@ class _RpcRequest<T> {
   }
 }
 
-abstract class RpcService<T, U> {
-  Future<RpcResponse<U>> execute(T data);
-
-  Future<void> shutdown();
-}
-
 /// A simple interface exposed to public
-abstract class IsolateRpcExecutor<T, U> implements RpcService<T, U> {
+abstract class IsolateRpcExecutor<T, U> implements IsolateRpc<T, U> {
   abstract final int size;
 }
 
@@ -72,15 +66,15 @@ class _SimpleIsolateRpcExecutor<T, U> implements IsolateRpcExecutor<T, U> {
   @override
   final int size;
 
-  final List<RpcService<T, U>> _services;
+  final List<IsolateRpc<T, U>> _services;
 
   int _seq = 0;
 
-  _SimpleIsolateRpcExecutor({required this.size, required List<RpcService<T, U>> services})
+  _SimpleIsolateRpcExecutor({required this.size, required List<IsolateRpc<T, U>> services})
       : _services = services;
 
   @override
-  Future<RpcResponse<U>> execute(T data) async {
+  Future<IsolateRpcResponse<U>> execute(T data) async {
     return _services[_seq++ % size].execute(data);
   }
 
@@ -100,20 +94,20 @@ class _SimpleIsolateRpcExecutor<T, U> implements IsolateRpcExecutor<T, U> {
 ///
 /// For handling computational heavy tasks, I would recommend to use
 /// ```dart
-/// IsolateRpcService.pool(size: Platform.numberOfProcessors - 1, processor: (_) => {});
+/// IsolateRpc.pool(size: Platform.numberOfProcessors - 1, processor: (_) => {});
 /// ```
 ///
 /// Example
 /// ```dart
-/// RpcService<int, int> rpcService = IsolateRpc.create(processor: (data) => data + 1, debugName: "rpc");
+/// IsolateRpc<int, int> rpc = IsolateRpc.create(processor: (data) => data + 1, debugName: "rpc");
 ///
-/// RpcResponse<int> resp = await rpcService.execute(1);
+/// IsolateRpcResponse<int> resp = await rpcService.execute(1);
 ///
 /// print(resp.result); // output: 2
 ///
-/// rpcService.shutdown(); // close the receive port and underlying Isolate.
+/// rpc.shutdown(); // close the receive port and underlying Isolate.
 /// ```
-class IsolateRpcService<T, U> implements RpcService<T, U> {
+class IsolateRpcService<T, U> implements IsolateRpc<T, U> {
   final int id;
 
   /// debugName will be assigned to the underlying Isolate
@@ -127,7 +121,7 @@ class IsolateRpcService<T, U> implements RpcService<T, U> {
   /// holding _isolate reference to control the lifecycle
   late final Future<Isolate> _isolate;
 
-  /// the main thread message receiver to receive Isolate RpcResponse<U> message
+  /// the main thread message receiver to receive Isolate IsolateRpcResponse<U> message
   late final RawReceivePort _receivePort;
 
   /// A future message sender replied by the first message from Isolate
@@ -136,10 +130,10 @@ class IsolateRpcService<T, U> implements RpcService<T, U> {
   /// [_completerMap] is a buffer to store uncompleted rpc execution callback.
   ///
   /// Note: the size grows when there is a backpressure (the rate of producing message is faster than consuming)
-  /// of the RpcService.
+  /// of the IsolateRpc.
   ///
   /// For handling computational intensive tasks, please consider to use [IsolateRpc.pool].
-  final _completerMap = <int, Completer<RpcResponse<U>>>{};
+  final _completerMap = <int, Completer<IsolateRpcResponse<U>>>{};
 
   /// unique sequence id for each RPC call
   int _rpcSeq = 0;
@@ -149,21 +143,21 @@ class IsolateRpcService<T, U> implements RpcService<T, U> {
   IsolateRpcService._({required FutureOr<U> Function(T data) processor, this.id = 0, this.debugName, this.logger}) {
     var resultPort = RawReceivePort();
     resultPort.handler = (message) {
-      if (message is RpcResponse) {
+      if (message is IsolateRpcResponse) {
         logger?.finest(() => "receive response $message");
         final int rid = message.requestId;
         final int svcId = message.serviceId;
         final Error? error = message.error;
         final dynamic result = message.result;
         if (error == null) {
-          _completerMap[rid]?.complete(RpcResponse(
+          _completerMap[rid]?.complete(IsolateRpcResponse(
             requestId: rid,
             serviceId: svcId,
             error: null,
             result: result,
           ));
         } else {
-          _completerMap[rid]?.complete(RpcResponse(
+          _completerMap[rid]?.complete(IsolateRpcResponse(
             requestId: rid,
             serviceId: svcId,
             error: error,
@@ -186,14 +180,14 @@ class IsolateRpcService<T, U> implements RpcService<T, U> {
 
   /// Send RpcRequest<T> message to Isolate and wait until Isolate to respond.
   @override
-  Future<RpcResponse<U>> execute(T data) async {
-    Completer<RpcResponse<U>> completer = Completer();
+  Future<IsolateRpcResponse<U>> execute(T data) async {
+    Completer<IsolateRpcResponse<U>> completer = Completer();
     var rid = _rpcSeq++;
     if (_isShutDown) {
-      return RpcResponse(
+      return IsolateRpcResponse(
           requestId: rid,
           serviceId: id,
-          error: RpcError("RpcService(id=$id, debugName=$debugName) has been shut down."),
+          error: IsolateRpcError("IsolateRpc(id=$id, debugName=$debugName) has been shut down."),
           result: null);
     }
     final _RpcRequest request = _RpcRequest(id: rid, serviceId: id, data: data);
@@ -207,7 +201,7 @@ class IsolateRpcService<T, U> implements RpcService<T, U> {
     return completer.future.whenComplete(() => logger?.finest(() => "$request completed"));
   }
 
-  /// Immediately stop receiving RpcResponse from Isolate and kill the underlying isolate
+  /// Immediately stop receiving IsolateRpcResponse from Isolate and kill the underlying isolate
   @override
   Future<void> shutdown() async {
     _isShutDown = true;
@@ -247,14 +241,14 @@ class _IsolateProcessor<T, U> {
         final dynamic data = message.data;
         try {
           final U result = await processor(data);
-          final resp = RpcResponse(requestId: rid, serviceId: svcId, error: null, result: result);
+          final resp = IsolateRpcResponse(requestId: rid, serviceId: svcId, error: null, result: result);
           logger?.finest(() => "processed RPC request $message with response=$resp");
           port.send(resp);
         } on Error catch (e) {
           logger?.severe(() => "cannot process RPC request $message", e, e.stackTrace);
 
           // catch all errors and wrapped with an RemoteError to represent error from Isolate
-          port.send(RpcResponse(
+          port.send(IsolateRpcResponse(
               requestId: rid,
               serviceId: svcId,
               error: e,
@@ -267,15 +261,15 @@ class _IsolateProcessor<T, U> {
   }
 }
 
-class IsolateRpc {
+abstract class IsolateRpc<T, U> {
 
   /// create a round-robin load balanced isolate pool for computational intensive and high concurrency processing.
   /// processing i.e., image processing.
   ///
   /// The created isolates in the pool will have debugName: ${debugNamePrefix}_${index} and id: ${index}
-  static RpcService<T, U> pool<T, U>(
+  static IsolateRpc<T, U> pool<T, U>(
       {required int size, required FutureOr<U> Function(T) processor, String debugNamePrefix = "rpc_pool", Logger? logger}) {
-    List<RpcService<T, U>> services = [];
+    List<IsolateRpc<T, U>> services = [];
     for (var i = 0; i < size; i++) {
       services.add(single(id: i, processor: processor, debugName: "${debugNamePrefix}_$i", logger: logger));
     }
@@ -284,8 +278,15 @@ class IsolateRpc {
 
   /// create a single isolate powered rpc service. Good for I/O tasks and light-weight tasks.
   /// i.e., HTTP call and json serialization
-  static RpcService<T, U> single<T, U>(
+  static IsolateRpc<T, U> single<T, U>(
       {required FutureOr<U> Function(T data) processor, int id = 0, String? debugName, Logger? logger}) {
     return IsolateRpcService._(processor: processor, id: id, debugName: debugName, logger: logger);
   }
+
+  // hide constructor
+  IsolateRpc._();
+
+  Future<IsolateRpcResponse<U>> execute(T data);
+
+  Future<void> shutdown();
 }
