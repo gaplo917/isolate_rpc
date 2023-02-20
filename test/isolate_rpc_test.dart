@@ -1,8 +1,6 @@
-import 'dart:isolate';
-
+import 'package:collection/collection.dart';
 import 'package:isolate_rpc/isolate_rpc.dart';
 import 'package:test/test.dart';
-import 'package:collection/collection.dart';
 
 class ComplexModel {
   final int int0;
