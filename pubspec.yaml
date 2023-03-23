@@ -1,6 +1,6 @@
 name: isolate_rpc
 description: Dart Isolate RPC. A simple RPC-style designed API to ease Isolate usage.
-version: 1.1.1
+version: 1.1.2
 repository: https://github.com/gaplo917/isolate_rpc
 license: MIT
 homepage: https://github.com/gaplo917/isolate_rpc
