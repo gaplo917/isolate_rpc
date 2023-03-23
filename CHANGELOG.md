@@ -1,3 +1,7 @@
+## 1.1.1
+
+- Update readme for benchmark
+
 ## 1.1.0
 
 breaking change to refactor simpler API naming
