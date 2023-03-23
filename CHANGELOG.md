@@ -1,3 +1,7 @@
+## 1.1.2
+
+- Fix readme benchmark images are not shown on pub.dev
+
 ## 1.1.1
 
 - Update readme for benchmark

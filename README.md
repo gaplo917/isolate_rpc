@@ -146,8 +146,8 @@ dart compile exe benchmark/main.dart -o ./benchmark/main
 ./benchmark/main
 ```
 
-![no_compute](./assets/no-compute.png)
-![json_serialization](./assets/json_serialization.png)
+![no_compute](https://raw.githubusercontent.com/gaplo917/isolate_rpc/main/assets/no-compute.png)
+![json_serialization](https://raw.githubusercontent.com/gaplo917/isolate_rpc/main/assets/json_serialization.png)
 
 ## License
 
