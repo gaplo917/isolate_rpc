@@ -1,3 +1,7 @@
+## 1.1.4
+
+- Update library description
+
 ## 1.1.3
 
 - Add Isolate communication benchmark to illustrate the overhead is neglectable 
