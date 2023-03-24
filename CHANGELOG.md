@@ -1,3 +1,9 @@
+## 1.1.3
+
+- Add Isolate communication benchmark to illustrate the overhead is neglectable 
+compared to the create and dispose of one-off `Isolate`
+
+
 ## 1.1.2
 
 - Fix readme benchmark images are not shown on pub.dev
