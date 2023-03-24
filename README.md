@@ -146,8 +146,10 @@ dart compile exe benchmark/main.dart -o ./benchmark/main
 ./benchmark/main
 ```
 
-![no_compute](https://raw.githubusercontent.com/gaplo917/isolate_rpc/main/assets/no-compute.png)
-![json_serialization](https://raw.githubusercontent.com/gaplo917/isolate_rpc/main/assets/json_serialization.png)
+![no_compute](https://raw.githubusercontent.com/gaplo917/isolate_rpc/main/benchmark/result/no_compute.png)
+![json_serialization](https://raw.githubusercontent.com/gaplo917/isolate_rpc/main/benchmark/result/json_serialization.png)
+![communication_small](https://raw.githubusercontent.com/gaplo917/isolate_rpc/main/benchmark/result/communication_small.png)
+![communication_large](https://raw.githubusercontent.com/gaplo917/isolate_rpc/main/benchmark/result/communication_large.png)
 
 ## License
 

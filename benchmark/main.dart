@@ -1,5 +1,8 @@
 
+import 'dart:math';
+
 import 'common.dart';
+import 'communication/dart_benchmark_rpc.dart';
 import 'compute/dart_benchmark.dart';
 import 'compute/dart_benchmark_rpc.dart';
 import 'compute/dart_benchmark_rpc_pool.dart';
@@ -75,6 +78,31 @@ import 'no_compute/dart_benchmark_rpc_pool.dart';
 /// IsolateRun,Compute(n=64,c=64)(RunTime): 10957.77049180328 us.
 /// IsolateRpc,Compute(n=64,c=64)(RunTime): 13419.46 us.
 /// IsolateRpcPool,Compute(n=64,c=64,poolSize=10)(RunTime): 4335.233766233766 us.
+///
+///
+/// running communication benchmark numOfTasks=100
+/// IsolateRpc,Communication(n=100,c=1,len=0)(RunTime): 412.72348328518365 us.
+/// IsolateRpc,Communication(n=100,c=1,len=1024)(RunTime): 433.4140845070423 us.
+/// IsolateRpc,Communication(n=100,c=1,len=2048)(RunTime): 440.8589376239806 us.
+/// IsolateRpc,Communication(n=100,c=1,len=4096)(RunTime): 475.71462544589775 us.
+/// IsolateRpc,Communication(n=100,c=1,len=8192)(RunTime): 509.73955147808357 us.
+/// IsolateRpc,Communication(n=100,c=1,len=16384)(RunTime): 549.8147333699835 us.
+/// IsolateRpc,Communication(n=100,c=1,len=32768)(RunTime): 673.4208754208754 us.
+/// IsolateRpc,Communication(n=100,c=1,len=65536)(RunTime): 930.1306369130637 us.
+/// IsolateRpc,Communication(n=100,c=1,len=131072)(RunTime): 1485.275426874536 us.
+/// IsolateRpc,Communication(n=100,c=1,len=262144)(RunTime): 8773.219298245614 us.
+/// IsolateRpc,Communication(n=100,c=1,len=524288)(RunTime): 17218.863247863246 us.
+/// IsolateRpc,Communication(n=100,c=1,len=1048576)(RunTime): 30766.378787878788 us.
+/// IsolateRpc,Communication(n=100,c=1,len=2097152)(RunTime): 52771.18421052631 us.
+/// IsolateRpc,Communication(n=100,c=1,len=4194304)(RunTime): 91668.81818181818 us.
+/// IsolateRpc,Communication(n=100,c=1,len=8388608)(RunTime): 195339.54545454544 us.
+/// IsolateRpc,Communication(n=100,c=1,len=16777216)(RunTime): 365409.6666666667 us.
+/// IsolateRpc,Communication(n=100,c=1,len=33554432)(RunTime): 733560.3333333334 us.
+/// IsolateRpc,Communication(n=100,c=1,len=67108864)(RunTime): 1448395.0 us.
+/// IsolateRpc,Communication(n=100,c=1,len=134217728)(RunTime): 2820773.0 us.
+/// IsolateRpc,Communication(n=100,c=1,len=268435456)(RunTime): 5762662.0 us.
+/// IsolateRpc,Communication(n=100,c=1,len=536870912)(RunTime): 12541032.0 us.
+/// IsolateRpc,Communication(n=100,c=1,len=1073741824)(RunTime): 33607697.0 us.
 void main(List<String> arguments) async {
   await createSuite(numOfTasks: 1, concurrency: 1);
 
@@ -89,6 +117,8 @@ void main(List<String> arguments) async {
   await createSuite(numOfTasks: 32, concurrency: 32);
 
   await createSuite(numOfTasks: 64, concurrency: 64);
+
+  await createCommunicationSuite(numOfTasks: 100);
 }
 
 Future<void> createSuite({required int numOfTasks, required int concurrency}) async {
@@ -113,4 +143,18 @@ Future<void> createSuite({required int numOfTasks, required int concurrency}) as
   await IsolateRpcPoolComputeBenchmark(numOfTasks: numOfTasks, concurrency: concurrency).report();
 
   print("\n");
+}
+
+Future<void> createCommunicationSuite({required int numOfTasks}) async {
+  print("running communication benchmark numOfTasks=$numOfTasks");
+
+  await delay(1000);
+  await IsolateRpcCommunicationBenchmark(numOfTasks: numOfTasks, concurrency: 1, length: 0).report();
+
+  // 1kB - 1GB
+  for(var i = 10; i < 31; i++){
+    await delay(1000);
+    await IsolateRpcCommunicationBenchmark(numOfTasks: numOfTasks, concurrency: 1, length: pow(2, i).toInt()).report();
+  }
+
 }
