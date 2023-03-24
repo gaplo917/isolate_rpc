@@ -1,14 +1,16 @@
-Dart Isolate RPC. A simple RPC-style designed API to ease Isolate usage.
+`isolate_rpc` makes [Isolate](https://dart.dev/language/concurrency#:~:text=Using%20isolates%2C%20your%20Dart%20code,Dart%20Native%20platform%20implements%20isolates) enjoyable.
+A simple RPC-style designed API to for Isolate.
 
 ## Features
 
-`isolate_rpc` provide a simpler solution to offload tasks into Isolate and yet can as `Isolate.run`(flutter `compute`)
+`isolate_rpc` provide a simpler solution to offload non-UI tasks into Isolate and yet can as `Isolate.run`(flutter `compute`)
 alternative with better performance for Dart SDK < 2.19.0.
 
 This library significantly reduced overheads of `Isolate.run`. `Isolate.run` create new
-Isolate on every single call. In the M1Pro macbook benchmark, each Isolate startup overhead is about ~85us*.
+Isolate on every single call. In my M1Pro macbook benchmark, each Isolate startup overhead takes ~85us*. I believe
+the number will be bigger in a low-end mobile device.
 
-Imagine if you are firing asynchronous offscreen operations constantly based on UI interactions, such as sending
+Imagine if you are firing asynchronous **offscreen operations** constantly based on UI interactions, such as sending
 analytics, fetching remote API, etc., you might want to eliminate this overhead.
 
 [See benchmark result](https://github.com/gaplo917/isolate_rpc/blob/main/benchmark/main.dart)
@@ -136,9 +138,11 @@ print(rpcPool.size);
 
 [See benchmark implementation](https://github.com/gaplo917/isolate_rpc/blob/main/benchmark)
 
-`NoCompute`: no workload, complete immediately
+`no_compute`: no workload, complete immediately
 
-`Compute`: large json (300 items in json array) serialization and deserialization
+`compute`: large json (300 items in json array) serialization and deserialization
+
+`communication`: sending a variable length of data (0 - 1GB) to Isolate and immediately return back to main.
 
 ```bash
 # execution script
